@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>출장서류 검증 및 여비 산정 | 행정업무지원시스템</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script defer src="js/config.js"></script>
+  <script defer src="js/excel.js"></script>
+  <script defer src="js/demo.js"></script>
+  <script defer src="js/api.js"></script>
+  <script defer src="js/app.js"></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">본문 바로가기</a>
+  <header class="topbar">
+    <a class="brand" href="#upload"><span class="brand-mark" aria-hidden="true">행정</span><strong>행정업무지원시스템</strong><span class="brand-divider">|</span><span class="system-name">출장·여비관리</span></a>
+    <div class="account"><span id="accountName">관리자</span><span class="divider">|</span><span>행정지원팀</span><span class="divider">|</span><button id="localLogout" type="button" disabled>로그아웃</button></div>
+  </header>
+  <nav class="global-nav" aria-label="상단 업무 메뉴">
+    <span class="portal-label">업무관리</span>
+    <a href="#upload">문서관리</a>
+    <a href="#upload" data-nav="upload" class="current">출장관리</a>
+    <a href="#results" data-nav="results">정산관리</a>
+    <a href="#history" data-nav="history">검증관리</a>
+    <span class="nav-right" id="systemDate"></span>
+  </nav>
+  <div class="workspace">
+    <aside class="sidebar">
+      <div class="side-title"><small>TRAVEL MANAGEMENT</small><strong>출장·여비관리</strong></div>
+      <div class="side-group">▾ 출장서류관리</div>
+      <nav aria-label="좌측 업무 메뉴">
+        <a href="#upload" data-nav="upload" class="active">출장서류 등록 <span>›</span></a>
+        <a href="#verification" data-nav="verification">출장서류 검증 <span>›</span></a>
+        <a href="#results" data-nav="results">정산결과 조회 <span>›</span></a>
+        <a href="#history" data-nav="history">검증 처리내역 <span>›</span></a>
+      </nav>
+      <dl class="side-info"><dt>접속 구분</dt><dd>업무담당자</dd><dt>업무 코드</dt><dd>TRV-001</dd><dt>운영 구분</dt><dd id="sideMode">시연</dd></dl>
+      <div class="side-bottom"><strong>출장서류 검증 및 여비 산정</strong><span>행정업무지원시스템</span><span>Ver. 1.0</span></div>
+    </aside>
+    <main id="main">
+      <div class="breadcrumb">업무관리 <span>›</span> 출장·여비관리 <span>›</span> <strong id="breadcrumbCurrent">출장서류 등록</strong></div>
+      <div class="page-heading"><h1>출장서류 검증 및 여비 산정</h1><span>화면번호 : TRV-001 <span class="divider">|</span> <b id="modeLabel">시연 모드</b></span></div>
+      <div id="modeNotice" class="mode-notice"><b>[시연]</b> 가상 처리내역 · 등록 PDF 분석 없음 · 정산금액은 예시</div>
+      <div class="work-tabs" aria-label="업무 바로가기"><a href="#upload" class="active">출장서류 등록·검증</a><a href="#results">정산결과조회</a><a href="#history">처리내역조회</a></div>
+
+      <section id="upload" class="work-section" aria-labelledby="uploadTitle">
+        <div class="section-heading"><h2 id="uploadTitle">검증대상등록</h2><span>업무구분 : 국내출장 <span class="divider">|</span> 등록단위 : PDF</span></div>
+        <div class="registration-fields"><dl><dt>처리업무</dt><dd>출장신청서 · 출장복명서 검증</dd><dt>담당부서</dt><dd>행정지원팀</dd><dt>처리방식</dt><dd>일괄검증</dd></dl></div>
+        <div id="localSourcePanel" class="registration-fields" hidden>
+          <div class="field" role="group" aria-label="PDF 등록 방식">
+            <strong>등록 방식</strong>
+            <label><input type="radio" name="localSource" id="sourceFolder" checked> 폴더 선택</label>
+            <label><input type="radio" name="localSource" id="sourceUpload"> PDF 직접 등록</label>
+          </div>
+        </div>
+        <div id="localFolderPanel" class="registration-fields" hidden>
+          <div class="field"><strong>PDF 폴더</strong><button id="openFolders" type="button">바탕화면 폴더 선택</button><span id="savedFolder">선택된 폴더 없음</span></div>
+          <ul id="folderFiles" class="folder-files" hidden></ul>
+        </div>
+        <div id="uploadFiles">
+        <div class="table-toolbar"><div><strong>▣ 첨부파일관리</strong><span class="count">총 <b id="fileCount">0</b> 건 / <span id="totalFileSize">0 KB</span></span></div><div class="button-group"><input id="fileInput" type="file" accept=".pdf,application/pdf" multiple hidden><button type="button" id="addFiles">파일등록</button><button type="button" id="deleteSelected" disabled>선택삭제</button><button type="button" id="deleteAll" disabled>전체삭제</button></div></div>
+        <div id="dropZone" class="table-scroll file-drop" aria-label="PDF 파일 등록 영역">
+          <table class="data-table file-table"><caption>등록한 PDF 파일 목록</caption><colgroup><col style="width:32px"><col style="width:50px"><col><col style="width:65px"><col style="width:90px"><col style="width:90px"><col style="width:140px"></colgroup><thead><tr><th><input id="selectAllFiles" type="checkbox" aria-label="첨부파일 전체 선택" disabled></th><th scope="col">순번</th><th scope="col">첨부파일명</th><th scope="col">확장자</th><th scope="col">파일크기</th><th scope="col">등록상태</th><th scope="col">파일관리</th></tr></thead><tbody id="fileBody"></tbody></table>
+        </div>
+        <div class="file-footnote"><span id="fileLimit"></span><span>선택 <b id="selectedFileCount">0</b> 건</span></div>
+        </div>
+        <div id="verification" class="verification-bar"><div class="execution-state" role="status" aria-live="polite"><span id="statusLight" class="status-light"></span><b id="executionStatus">대기</b><span id="executionDetail">등록파일 없음</span><span id="tinyProgress" class="tiny-progress" hidden><i></i></span></div><div class="button-group"><label id="scenarioLabel" for="demoScenario">시연결과 <select id="demoScenario"><option value="completed">정산 완료</option><option value="review">검토 필요</option><option value="error">처리 오류</option></select></label><button type="button" class="primary" id="runVerification" disabled>검증실행</button></div></div>
+      </section>
+
+      <div id="message" class="message" role="alert" hidden></div>
+
+      <section id="results" class="work-section" aria-labelledby="resultsTitle">
+        <div class="section-heading"><h2 id="resultsTitle">검증결과 및 정산내역</h2><span id="resultSource">선택된 처리내역 없음</span></div>
+        <div id="noResult" class="empty-result">조회할 처리내역을 선택하십시오.</div>
+        <div id="resultContent" hidden>
+          <dl class="result-meta"><dt>처리번호</dt><dd id="resultId"></dd><dt>처리상태</dt><dd id="resultStatus"></dd><dt>검증결과</dt><dd id="resultDecision"></dd><dt>정산금액</dt><dd id="resultAmount" class="amount"></dd></dl>
+          <div class="result-reason"><strong>판정사유</strong><span id="resultReason"></span></div>
+          <div id="monitorWarning" class="message" hidden></div>
+          <div id="issueBlock" hidden><h3>확인필요사항</h3><table class="data-table issue-table"><caption>검토 및 오류 사유</caption><thead><tr><th scope="col">확인항목</th><th scope="col">검토내용</th></tr></thead><tbody id="issueBody"></tbody></table></div>
+          <div id="travelerBlock" hidden><h3>출장자별 검증결과</h3><div class="table-scroll"><table class="data-table"><caption>출장자별 검증 결과</caption><thead><tr><th scope="col">성명</th><th scope="col">검증결과</th><th scope="col">확인내용</th><th scope="col">금액(원)</th></tr></thead><tbody id="travelerBody"></tbody></table></div></div>
+          <div class="table-toolbar"><strong>▣ 출장여비 정산서</strong><span>단위 : 원</span></div>
+          <div class="table-scroll"><table class="data-table settlement-table"><caption>출장여비 정산서</caption><colgroup><col style="width:200px"><col style="width:115px"><col style="width:75px"><col style="width:75px"><col style="width:95px"><col style="width:75px"><col><col style="width:145px"></colgroup><thead><tr><th scope="col">출장기간</th><th scope="col">목적지</th><th scope="col">직위</th><th scope="col">성명</th><th scope="col">금액</th><th scope="col">영수인</th><th scope="col">비고</th><th scope="col">등록번호</th></tr></thead><tbody id="settlementBody"></tbody></table></div>
+          <div class="result-actions"><span id="resultFileNames"></span><div class="button-group"><button type="button" id="refreshBatch" hidden>상태재조회</button></div></div>
+        </div>
+      </section>
+
+      <section id="history" class="work-section" aria-labelledby="historyTitle">
+        <div class="section-heading"><h2 id="historyTitle">검증 처리내역</h2><span id="historyScope">조회범위 : 시연 처리내역</span></div>
+        <form id="searchForm" class="search-box">
+          <div class="search-fields"><div class="field"><label for="startDate">처리일자</label><input id="startDate" type="date" aria-label="처리 시작일"><span>~</span><input id="endDate" type="date" aria-label="처리 종료일"><button type="button" class="mini" id="todayFilter">오늘</button><button type="button" class="mini" id="monthFilter">1개월</button><button type="button" class="mini" id="allDates">전체</button></div><div class="field"><label for="statusFilter">처리상태</label><select id="statusFilter"><option value="">전체</option><option value="queued">대기</option><option value="processing">처리중</option><option value="completed">완료</option><option value="error">오류</option></select><label for="decisionFilter" class="secondary-label">검증결과</label><select id="decisionFilter"><option value="">전체</option><option value="정산 완료">정산 완료</option><option value="검토 필요">검토 필요</option></select><label for="keyword" class="secondary-label">처리번호 / 파일명</label><input id="keyword" type="search" autocomplete="off"></div></div><div class="search-actions"><button type="submit" class="search-button">조회</button><button type="button" id="resetSearch">초기화</button></div>
+        </form>
+        <div class="table-toolbar"><div><strong>▣ 처리내역조회</strong><span class="count">총 <b id="historyCount">0</b> 건 <span id="filteredCount"></span></span></div><div class="button-group"><button type="button" id="viewSelected" disabled>선택결과조회</button><label class="page-size">표시건수 <select id="pageSize"><option value="10">10건</option><option value="20">20건</option><option value="50">50건</option></select></label></div></div>
+        <div class="table-scroll"><table class="data-table history-table"><caption>검증 작업 처리내역</caption><colgroup><col style="width:32px"><col style="width:160px"><col style="width:145px"><col style="width:75px"><col style="width:80px"><col style="width:100px"><col style="width:110px"><col style="width:72px"></colgroup><thead><tr><th><input id="selectAllHistory" type="checkbox" aria-label="현재 페이지 처리내역 전체 선택"></th><th scope="col">처리번호</th><th scope="col">처리일시</th><th scope="col">첨부파일수</th><th scope="col">처리상태</th><th scope="col">검증결과</th><th scope="col">정산금액(원)</th><th scope="col">결과조회</th></tr></thead><tbody id="historyBody"></tbody></table></div>
+        <div class="table-bottom"><span id="historySelection">선택 0 건</span><nav id="pagination" aria-label="처리내역 페이지"></nav><span>단위 : 건 / 원</span></div>
+        <div id="fileExportPanel" hidden>
+          <div class="table-toolbar">
+            <div><strong>엑셀에 포함할 PDF</strong><span id="fileExportCount" class="count" aria-live="polite">선택 0건</span></div>
+            <div class="button-group"><button type="button" id="clearFileExport" disabled>선택 해제</button><button type="button" id="downloadFileExport" class="excel" disabled>선택 PDF 엑셀다운로드</button></div>
+          </div>
+          <div class="table-scroll"><table class="data-table">
+            <caption>현재 처리내역 페이지에서 다운로드할 PDF 선택</caption>
+            <colgroup><col style="width:46px"><col><col style="width:30%"><col style="width:25%"></colgroup>
+            <thead><tr><th scope="col">선택</th><th scope="col">PDF 파일명</th><th scope="col">처리번호</th><th scope="col">처리일시</th></tr></thead>
+            <tbody id="fileExportBody"></tbody>
+          </table></div>
+        </div>
+      </section>
+      <footer><strong>행정업무지원시스템</strong><span>출장서류 검증 및 여비 산정 <span class="divider">|</span> <span id="footerMode">시연용 · 가상 데이터</span></span><a href="#main">▲ TOP</a></footer>
+    </main>
+  </div>
+  <dialog id="previewDialog" aria-labelledby="previewTitle"><div class="dialog-title"><strong id="previewTitle">첨부파일 미리보기</strong><button type="button" id="closePreview" aria-label="미리보기 닫기">닫기 ×</button></div><div class="preview-caption"><span id="previewFilename"></span><a id="openPdf" target="_blank" rel="noopener">PDF 새 창 열기 ↗</a></div><iframe id="pdfFrame" title="PDF 미리보기"></iframe><div class="dialog-foot">PDF 표시가 지원되지 않는 경우 새 창 열기를 이용하십시오.</div></dialog>
+  <dialog id="localLogin" class="local-dialog" aria-labelledby="loginTitle">
+    <div class="dialog-title"><strong id="loginTitle">로컬 관리자 로그인</strong></div>
+    <form id="localLoginForm" class="local-dialog-body">
+      <p>서버를 실행한 터미널에 표시된 비밀번호를 입력하세요.</p>
+      <div class="field"><label for="localPassword">비밀번호</label><input id="localPassword" type="password" autocomplete="current-password" required><button class="primary" type="submit">로그인</button></div>
+      <p id="loginError" role="alert" hidden></p>
+    </form>
+  </dialog>
+  <dialog id="folderDialog" class="local-dialog" aria-labelledby="folderTitle">
+    <div class="dialog-title"><strong id="folderTitle">바탕화면 폴더 선택</strong><form method="dialog"><button>닫기</button></form></div>
+    <div class="local-dialog-body">
+      <p id="folderLocation"></p>
+      <div class="field"><button id="folderUp" type="button">상위 폴더</button><button id="useFolder" class="primary" type="button">현재 폴더 사용</button></div>
+      <div id="folderChildren" class="folder-children"></div>
+      <p id="folderError" role="alert" hidden></p>
+    </div>
+  </dialog>
+  <noscript><div class="message">JavaScript를 활성화해야 업무 화면을 사용할 수 있습니다.</div></noscript>
+</body>
+</html>
